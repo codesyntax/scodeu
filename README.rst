@@ -58,4 +58,4 @@ CONTRIBUTING
 
 Please send your PR to the projects Github_ page.
 
-.. _github: https://
+.. _github: https://github.com/codesyntax/scodeu
