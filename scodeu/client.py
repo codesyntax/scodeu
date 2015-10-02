@@ -113,11 +113,26 @@ class Client(object):
                 search_url += '&r01kPgCmd=next&r01kSrchSrcId=contenidos.inter&r01kTgtPg={0}'.format(page)
             return search_url
         
+    def _get_documents_oids(self, xml_item):
+        """
+        Recuperar el valor datafileOid es un poco complicado,ya que va en el nombre del tag
+        Esta pendiente meter la url del documento directamente en la zona
+        contentRispDocumentsInfo. De momento no esta disponible
+        """
+        document_oids_list = []
+        for child in xml_item.getiterator():
+            if child.tag.startswith('datafileOid'):
+                document_oids_list.append(child.tag.split('.')[1])
+        return document_oids_list
+    
     def _create_item_from_xml(self, xml_item):
         #alid_metadata = self.metadata + self.common_metadata
+                
         new_item = {}
         
         for child in xml_item.getiterator():
+            if child.tag == 'documentDataFilesGeneratedFilesDocumentRelativePaths':
+                new_item['datafileOids'] = self._get_documents_oids(child)
             new_item[child.tag] = child.text
                      
         return new_item
@@ -168,66 +183,4 @@ class Client(object):
         build_url = self._build_search_url(search_type='codified', tipo=tipo, **kwargs)
         return self._search_do(build_url)
 
-class OpenData(Client):
-    # http://opendata.euskadi.eus/contenidos-generales/-/contenidos/informacion/inventario_familias_tipos/es_def/imgpreview.shtml?index=16
     
-    allowed_types = ('estadistica',
-                     'ds_meteorologicos',
-                     'ds_geograficos',
-                     'ds_recursos_turisticos',
-                     'ds_recursos_linguisticos',
-                     'ds_ayudas_subvenciones',
-                     'ds_autorizaciones',
-                     'ds_carnes',
-                     'ds_registros',
-                     'ds_inspecciones',
-                     'ds_multas_sanciones',
-                     'ds_arbitrajes_denuncias_reclamaciones',
-                     'ds_contrataciones',
-                     'ds_premios_concursos',
-                     'ds_procedimientos_otros',
-                     'ds_anuncios_contratacion',
-                     'ds_general',
-                     'ds_informes_estudios',
-                     'ds_localizaciones',
-                     'ds_noticias',
-                     'ds_eventos',
-                     'ds_rrhh',
-                     'ds_juridicos',
-                     'ds_organizacion',)
-        
-    common_metadata = ('statisticOfficiality',
-                       'statisticRegularity',
-                       'statisticDiffusionDate',
-                       'OpendataEstadistic',# (sic)
-                       'OpendataTextHTML',
-                       'OpendataURLHTML',
-                       'OpendataImageEustat',
-                       'OpendataDatasets',
-                       'OpendataLabels',
-                       'OpendataSource',
-                       'OpendataReleaseDate',
-                       'OpendataOrder',
-                       'OpendataFormats',
-                       'OpendataLicense',)
-    familia = 'opendata'
-        
-class RegistrosPublicosAdministrativos(Client):
-    # http://opendata.euskadi.eus/contenidos-generales/-/contenidos/informacion/inventario_familias_tipos/es_def/imgpreview.shtml?index=22
-
-    allowed_types = ('fundacion',
-                     'asociacion')
-
-    common_metadata = ('recNumRec'
-                       'recName',
-                       'recConstitutionDate',
-                       'recTerritoryCode',
-                       'recTerritoryName',
-                       'recTownCode',
-                       'recTownName',
-                       'recPostalCode',
-                       'recAddress',
-                       'recGoal')
-        
-    familia = 'registros_publicos_administrativos'
-
